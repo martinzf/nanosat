@@ -1,0 +1,4 @@
+https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#igrfwmm
+
+Google Earth: 40° 27' 03" N 3° 43' 32" W 663 m
+Total field: 45,052.1 nT = 45.0521 uT
