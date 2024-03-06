@@ -1,4 +1,4 @@
-clear; clc;
+clear; clc
 
 % Connection information
 ARDUINO_ADDRESS = 'B69A456D9D19';
@@ -33,17 +33,18 @@ while toc < 10
     disp(gi)
 end
 g_offset = mean(g, 1);
-disp('Gyroscope calibrated')
+save('gyrdata', 'g_offset')
+disp('Gyroscope calibration data recorded')
 
 %% Magnetometer calibration
 FIELD = 45.0521; % uT
 disp('To calibrate magnetometer rotate IMU in every orientation possible')
-input('Press enter to begin calibrating, close figure to stop', 's');
+input('Press enter to begin calibrating, close figure to stop ', 's');
 % Create figure
 figure('CloseRequestFcn', @myclosereq)
 global running
 running = true;
-plot = scatter3([], [], []);
+plot = scatter3([], [], [], 'filled');
 xlim(2 * [- FIELD, FIELD])
 ylim(2 * [- FIELD, FIELD])
 zlim(2 * [- FIELD, FIELD])
@@ -51,16 +52,21 @@ zlim(2 * [- FIELD, FIELD])
 m = [];
 while running
     m = [m; arrayfun(@(x) mydecode(read(x)), ble_m)];
-    plot.XData = m(:, 1);
-    plot.YData = m(:, 2);
-    plot.ZData = m(:, 3);
-    drawnow
-    pause(.05)
+    try
+        plot.XData = m(:, 1);
+        plot.YData = m(:, 2);
+        plot.ZData = m(:, 3);
+        drawnow
+        pause(.05)
+    catch
+        break
+    end
 end
 
 [Am, bm, magnorm]  = magcal(m);
-[Am, bm] = [Am, bm] * FIELD / magnorm;
-disp('Magnetometer calibrated')
+Am = Am * FIELD / magnorm;
+save('magdata', 'Am', 'bm')
+disp('Magnetometer calibration data recorded')
 
 %% Accelerometer calibration
 AVERAGING = 30;
@@ -70,10 +76,11 @@ answer = input('Take a measurement? [Y/n]: ', 's');
 while not(strcmpi(answer, 'y') || strcmpi(answer, 'n'))
      answer = input('Take a measurement? [Y/n]: ', 's');
 end
+a = [];
 while strcmpi(answer, 'y')
     ai = [0, 0, 0];
     for i = 1:AVERAGING
-        ai = ai + arrayfun(@(x) mydecode(read(x)), ble_m);
+        ai = ai + arrayfun(@(x) mydecode(read(x)), ble_a);
     end
     ai = ai / AVERAGING;
     a = [a; ai];
@@ -84,12 +91,26 @@ while strcmpi(answer, 'y')
     end
 end
 
-[Aa, ba, accnorm]  = magcal(a);
-[Aa, ba] = [Aa, ba] / accnorm;
-disp('Accelerometer calibrated')
+[Aa, ba, accnorm] = magcal(a);
+Aa = Aa / accnorm;
+save('accdata', 'Aa', 'ba')
+disp('Accelerometer calibration data recorded')
 
 %% Showing results
+figure('Name', 'Gyroscope calibration', 'NumberTitle', 'off')
+g_offset_s = compose('%.3f', g_offset);
+text(0.5, 0.5, ...
+    ['Offset = (', g_offset_s{1}, ', ', g_offset_s{2}, ', ', ...
+    g_offset_s{3}, ') dps'], ...
+    'HorizontalAlignment', 'center', 'FontSize', 14);
+axis off;
+set(gcf, 'Color', 'white');
 
+mCorrected = (m - bm) * Am;
+calibplot(m, mCorrected, FIELD, 'Magnetometer calibration')
+
+aCorrected = (a - ba) * Aa;
+calibplot(a, aCorrected, 1, 'Accelerometer calibration')
 
 %% Cleanup
 % Unsubscribe from BLE notifications
@@ -117,4 +138,43 @@ function myclosereq(src, event)
     global running
     running = false; % Exit animation loop
     delete(gcf)
+end
+
+% Plotting calibration results
+function calibplot(x, xc, xnorm, txt)
+    figure('Name', txt, 'NumberTitle', 'off')
+    tcl = tiledlayout(2, 2);
+    r = sum(xc.^2, 2) - xnorm^2;
+    E = sqrt(r.' * r / length(x)) / (2*xnorm^2);
+    E_string = compose('%.4f', E);
+    sgtitle(['Residual error in corrected data: ', E_string{1}])
+    idx = [1, 2; 1, 3; 2, 3];
+    ax = ['X', 'Y'; 'X', 'Z'; 'Y', 'Z'];
+    for i = 1:3
+        nexttile(tcl)
+        hold on; grid on
+        scatter(x(:, idx(i, 1)), x(:, idx(i, 2)), 7, 'filled')
+        scatter(xc(:, idx(i, 1)), xc(:, idx(i, 2)), 7, 'filled')
+        hold off
+        xlim(3 * [- xnorm, xnorm])
+        ylim(3 * [- xnorm, xnorm])
+        xlabel(ax(i, 1))
+        ylabel(ax(i, 2))
+    end
+    nexttile(tcl)
+    hold on; grid on
+    l1 = scatter3(x(:, 1), x(:, 2), x(:, 3), 10, ...
+        'filled', 'DisplayName', 'Original');
+    l2 = scatter3(xc(:, 1), xc(:, 2), xc(:, 3), 10, ...
+        'filled', 'DisplayName', 'Corrected');
+    hold off
+    xlim(3 * [- xnorm, xnorm])
+    ylim(3 * [- xnorm, xnorm])
+    zlim(3 * [- xnorm, xnorm])
+    xlabel('X')
+    ylabel('Y')
+    zlabel('Z')
+    view(45, 10)
+    hL = legend([l1, l2]); 
+    hL.Layout.Tile = 'South';
 end

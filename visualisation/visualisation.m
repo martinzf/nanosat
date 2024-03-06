@@ -1,4 +1,4 @@
-clear; clc;
+clear; clc
 
 % Connection information
 ARDUINO_ADDRESS = 'B69A456D9D19';
@@ -38,10 +38,14 @@ while running
     roll  = mydecode(read(ble_roll));
     pitch = mydecode(read(ble_pitch));
     yaw   = mydecode(read(ble_yaw));
-    q = quaternion([- yaw, pitch, roll], 'eulerd', 'ZYX', 'frame');
-    set(patch, Orientation=q); 
-    drawnow
-    pause(.05)
+    try
+        q = quaternion([- yaw, pitch, roll], 'eulerd', 'ZYX', 'frame');
+        set(patch, Orientation=q); 
+        drawnow
+        pause(.05)
+    catch
+        break
+    end
 end
 
 % Unsubscribe from BLE notifications
