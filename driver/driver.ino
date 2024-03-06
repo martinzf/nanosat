@@ -26,7 +26,7 @@ void setup() {
 
   // Stop if unable to use BLE
   if (!BLE.begin()) {
-    Serial.println("BLE failed to initialise");
+    Serial.println("Failed to initialise BLE");
     while(true);
   }
 
@@ -36,7 +36,7 @@ void setup() {
   // Set BLE Service Advertisment
   BLE.setAdvertisedService(EulerAngles);
     
-  // Add characteristics to BLE Service Advertisment
+  // Add characteristics to BLE Service 
   EulerAngles.addCharacteristic(ble_roll);
   EulerAngles.addCharacteristic(ble_pitch);
   EulerAngles.addCharacteristic(ble_yaw);
@@ -46,7 +46,7 @@ void setup() {
 
   // Start advertising
   BLE.advertise();
-  Serial.println("Bluetooth device now active, waiting for connections...");
+  Serial.println("Bluetooth peripheral active, awaiting connections...");
 
   // Start the sensor filter
   filter.begin(sensorRate);
@@ -54,20 +54,20 @@ void setup() {
 }
 
 void loop() {
-  float ax, ay, az;       // Acceleration 
-  float gx, gy, gz;       // Angular velocity
-  float mx, my, mz;       // Magnetometer
+  float a[3]; // Acceleration 
+  float g[3]; // Angular velocity
+  float m[3]; // Magnetometer
   float roll, pitch, yaw; // Orientation
 
   // Read IMU data
   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
-    IMU.readAcceleration(ax, ay, az);  // g
-    IMU.readGyroscope(gx, gy, gz);     // dps
-    IMU.readMagneticField(mx, my, mz); // uT
+    IMU.readAcceleration(a[0], a[1], a[2]);  // g
+    IMU.readGyroscope(g[0], g[1], g[2]);     // dps
+    IMU.readMagneticField(m[0], m[1], m[2]); // uT
   }
 
   // Update filter
-  filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+  filter.update(g[0], g[1], g[2], a[0], a[1], a[2], m[0], m[1], m[2]);
 
   // Check if central device is connected
   BLEDevice central = BLE.central();
@@ -78,13 +78,13 @@ void loop() {
 
       // Read IMU data
       if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
-        IMU.readAcceleration(ax, ay, az);  // g
-        IMU.readGyroscope(gx, gy, gz);     // dps
-        IMU.readMagneticField(mx, my, mz); // uT
+        IMU.readAcceleration(a[0], a[1], a[2]);  // g
+        IMU.readGyroscope(g[0], g[1], g[2]);     // dps
+        IMU.readMagneticField(m[0], m[1], m[2]); // uT
       }
 
       // Compute Euler angles in degrees
-      filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+      filter.update(g[0], g[1], g[2], a[0], a[1], a[2], m[0], m[1], m[2]);
       roll  = filter.getRoll();
       pitch = filter.getPitch();
       yaw   = filter.getYaw();

@@ -2,27 +2,27 @@ clear; clc;
 
 % Connection information
 ARDUINO_ADDRESS = 'B69A456D9D19';
-SERVICE_UUID    = '180C';
-ROLL_UUID       = '2A56';
-PITCH_UUID      = '2A57';
-YAW_UUID        = '2A58';
+SERVICE_UUID    = "180C";
+ROLL_UUID       = "2A56";
+PITCH_UUID      = "2A57";
+YAW_UUID        = "2A58";
 
 % Establish connection with BLE device & characteristics
-disp(['Connecting to BLE periferal ', ARDUINO_ADDRESS, '...']);
+disp(['Connecting to BLE periferal ', ARDUINO_ADDRESS, '...'])
 ble_device = ble(ARDUINO_ADDRESS);
-disp('Accessing BLE characteristics...');
+disp('Accessing BLE characteristics...')
 ble_roll   = characteristic(ble_device, SERVICE_UUID, ROLL_UUID);
 ble_pitch  = characteristic(ble_device, SERVICE_UUID, PITCH_UUID);
 ble_yaw    = characteristic(ble_device, SERVICE_UUID, YAW_UUID);
 
 % Subscribe to BLE notifications
-disp('Subscribing to BLE notifications...');
-subscribe(ble_roll);
-subscribe(ble_pitch);
-subscribe(ble_yaw);
+disp('Subscribing to BLE notifications...')
+subscribe(ble_roll)
+subscribe(ble_pitch)
+subscribe(ble_yaw)
 
 % Create figure
-fig = figure('CloseRequestFcn', @myclosereq);
+figure('CloseRequestFcn', @myclosereq)
 global running
 running = true;
 
@@ -45,15 +45,15 @@ while running
 end
 
 % Unsubscribe from BLE notifications
-disp('Unsubscribing from BLE notifications...');
-subscribe(ble_roll);
-subscribe(ble_pitch);
-subscribe(ble_yaw);
+disp('Unsubscribing from BLE notifications...')
+unsubscribe(ble_roll)
+unsubscribe(ble_pitch)
+unsubscribe(ble_yaw)
 
 % Terminate BLE connection
-disp('Ending BLE connection...');
+disp('Ending BLE connection...')
 clear ble_device
-disp(['Disconnected from ', ARDUINO_ADDRESS]);
+disp(['Disconnected from ', ARDUINO_ADDRESS])
 
 %% Helper functions
 
@@ -64,6 +64,7 @@ function myclosereq(src, event)
     delete(gcf)
 end
 
+% Received binary to single precision float
 function f = mydecode(b)
     b_strings = dec2bin(b, 8); % Convert decimal values to binary strings
     b_concat = reshape(b_strings.', 1, []); % Concatenate binary strings
