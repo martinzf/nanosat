@@ -1,7 +1,7 @@
 clear; clc
 
 % Connection information
-ARDUINO_ADDRESS = 'B69A456D9D19';
+ARDUINO_ADDRESS = 'DC4D6D1275B8';
 SERVICE_UUID    = "180C";
 ROLL_UUID       = "2A56";
 PITCH_UUID      = "2A57";
