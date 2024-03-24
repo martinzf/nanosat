@@ -12,14 +12,18 @@ to upload to the controller, with corresponding MATLAB scripts and
 notebooks to read and write data over Bluetooth Low Energy (BLE). 
 Each code folder serves a different purpose, indicated by its name: 
 attitude calculation, sensor calibration, and tests, respectively.
-The `3dmodels` folder contains various parts of the build. The file
-`local_magfield_info.txt` contains the expected magnetic field at UCM,
+The `3dmodels` folder holds various parts of the build &mdash; it 
+contains the 3 different 3D file types used for this project. The file
+`local_magfield_info.txt` shows the expected magnetic field at UCM,
 calculated via the most recent World Magnetic Model on the NOAA's website.
 
 ```
 nanosat
 .
 |-- 3dmodels
+|   |-- 3mf
+|   |-- FCStd
+|   |-- step
 |-- attitude
 |   |-- attitude.ino
 |   |-- visualisation.m
