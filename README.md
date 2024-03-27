@@ -49,12 +49,12 @@ The build currently uses the following components:
 ### Angular momentum
 
 Regardless of the reaction wheel configuration in the various alternative
-3D designs, angular momentum about the origin of the cubesat $\mathbf{L}_O$
+3D designs, angular momentum about the origin of the cubesat $\mathbf{L}\_O$
 wrt angular momentum about the center of mass of a wheel $\mathbf{L}_{CM}$ 
 is given by
 
 $$
-\mathbf{L}_O = M\mathbf{R}\times\mathbf{V} + \mathbf{L}_{CM}
+\mathbf{L}\_O = M(\mathbf{R}\times \mathbf{V}) + \mathbf{L}_{CM}
 $$
 
 with $\mathbf{V}$ the velocity of the center of mass of the wheel wrt the 
